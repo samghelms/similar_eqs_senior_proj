@@ -1,4 +1,3 @@
-from Bio import pairwise2
 import re
 
 
@@ -59,15 +58,6 @@ def has_op(s):
     if s.strip()[0] == '-':
         return test(s.strip()[1:])
     return test(s)
-
-
-def edit_distance(s1, s2):
-    aligns = pairwise2.align.globalxx(s1, s2)
-    score = 100000
-    if len(aligns) > 0:
-        _, _2, score, _3, _4 = aligns[0]
-    return score
-
 
 def high_level_only(s):
     """@ params s: str
