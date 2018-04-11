@@ -35,4 +35,4 @@ if __name__ == '__main__':
     df = df[filt]
     df['clean_split_filtered_tokenized'] = df['clean_split_filtered'].apply(lambda x: [tokenize(e, sw) for e in x])
     print("writing")
-    df['clean_split_filtered_tokenized'].to_csv(outpath, error_bad_lines=False)
+    df.to_csv(outpath, error_bad_lines=False)
