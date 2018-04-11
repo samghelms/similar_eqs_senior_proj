@@ -1,7 +1,8 @@
 from Bio import pairwise2
+import re
 
 
-def split_high_level_eqs(s):
+def split_high_level_eqs(s, split_chars=r'='):
     """@params: s: tuple of strings
         @returns tuple of strings split on equals"""
     dep_depth = 0
@@ -15,7 +16,7 @@ def split_high_level_eqs(s):
             dep_depth += 1
         elif c in r_dep_chars:
             dep_depth -= 1
-        elif c == "=":
+        elif c in split_chars:
             if dep_depth == 0:
                 ret.append(s[prev_idx:i])
                 prev_idx = i + 1
@@ -42,13 +43,21 @@ def has_op(s):
         @returns list of booleans that encodes whether a string in the list contains a
                  operator (+-*,/, etc.) at a high level (not within {})"""
     # others = [r'\dots', 'matrix', 'pmatrix', 'array']
-    ops = ["+", "-", r"\pmod", r"\bmod", r"\frac", r"\tfrac",
-               r"\dfrac", r"\times", r"\sqrt", r'\int', r'\land',
-               r'\lor', r'\in', r'\subset', r'\iiint', r'\bigcup',
-              r'\bigsqcup', r'\bigoplus', r'\prod', r'\bigotimes',
-              r'\bigcap', r'\bigvee', r'\oint', r'\coprod', r'\iint'
-              r'\idotsint', r'\bigwedge', r'\cfrac']
-    test = lambda x: any([c in x for c in ops if x is not None])
+    if s is None or len(s.strip()) == 0:
+        return False
+    ops = [r"\+", r'-', r"\\pmod", r"\\bmod", r"\\frac", r"\\tfrac",
+               r"\\dfrac", r"\\times", r"\\sqrt", r'\\int', r'\\land',
+               r'\\lor', r'\\in', r'\\subset', r'\\iiint', r'\\bigcup',
+              r'\\bigsqcup', r'\\bigoplus', r'\\prod', r'\\bigotimes',
+              r'\\bigcap', r'\\bigvee', r'\\oint', r'\\coprod', r'\\iint'
+              r'\\idotsint', r'\\bigwedge', r'\\cfrac']
+
+    regexp = lambda x: re.compile(x + r"(?![A-Za-z])")
+    test_inner = lambda c, x: bool(re.search(regexp(c), x))
+    test = lambda x: any([test_inner(c, x) for c in ops if x is not None])
+    # get rid of leading negatives
+    if s.strip()[0] == '-':
+        return test(s.strip()[1:])
     return test(s)
 
 
@@ -67,13 +76,13 @@ def high_level_only(s):
     dep_depth = 0
     prev_idx = 0
     curr = ""
-    prev_c = ""
+    prev_c = "x"
     supsub = "^_"
     for c in s:
-        if c == r"{":
-            dep_depth+=1
-        elif c == r"}":
-            dep_depth-=1
+        if c in r"{[(<":
+            dep_depth += 1
+        elif c in r"})]>":
+            dep_depth -= 1
         else:
             if dep_depth == 0 and prev_c not in supsub\
                               and c not in supsub:
