@@ -17,7 +17,7 @@ if __name__ == '__main__':
         filename = sys.argv[1]
         outpath = sys.argv[2]
     df = pd.DataFrame(pd.read_csv(filename, sep="\t",
-                                  header=None))
+                                  header=None, error_bad_lines=False))
     print("loaded")
     # stopwords
     sw = ['\\', '\\\\']
@@ -35,4 +35,4 @@ if __name__ == '__main__':
     df = df[filt]
     df['clean_split_filtered_tokenized'] = df['clean_split_filtered'].apply(lambda x: [tokenize(e, sw) for e in x])
     print("writing")
-    df.to_csv(outpath, error_bad_lines=False)
+    df.to_csv(outpath)
