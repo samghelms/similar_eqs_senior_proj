@@ -8,6 +8,7 @@ from common.clean import replace
 from common.heuristics import test_for_suitable, split_high_level_eqs
 from common.tokenize import tokenize
 import sys
+<<<<<<< HEAD
 import csv
 
 
@@ -24,6 +25,8 @@ def process_row(r, writer, sw=['\\', '\\\\']):
     r.append([tokenize(e, sw) for e in r[4]])
 
     writer.writerow(row)
+=======
+>>>>>>> 5a0c4835b9b127afbb543b8ead1f48f23f3f482c
 
 # test: "../data/eqs_100k.tsv" 'aligned_ex.csv'
 if __name__ == '__main__':
@@ -32,6 +35,7 @@ if __name__ == '__main__':
     else:
         filename = sys.argv[1]
         outpath = sys.argv[2]
+<<<<<<< HEAD
 
     with open(filename) as csvfile:
         with open(outpath, "w+") as outfile:
@@ -45,3 +49,25 @@ if __name__ == '__main__':
 
                 if i % 100000 == 0:
                     print("{i} rows processed".format(i=i))
+=======
+    df = pd.DataFrame(pd.read_csv(filename, sep="\t",
+                                  header=None))
+    print("loaded")
+    # stopwords
+    sw = ['\\', '\\\\']
+    df.columns = ["eq_id", "eq"]
+    df['clean'] = replace(df['eq'])
+    df['clean_split'] = df['clean'].apply(split_high_level_eqs)
+    se = df['clean_split'].apply(lambda x: len(x) > 1 if x is not None
+                                 else False)
+    print("cleaned and split")
+    df = df[se].reset_index()
+    se = df['clean_split'].apply(test_for_suitable)
+    df['clean_split_filtered'] = se
+    filt = df['clean_split_filtered'].apply(lambda x: x is not None)
+    print("applied filter")
+    df = df[filt]
+    df['clean_split_filtered_tokenized'] = df['clean_split_filtered'].apply(lambda x: [tokenize(e, sw) for e in x])
+    print("writing")
+    df.to_csv(outpath)
+>>>>>>> 5a0c4835b9b127afbb543b8ead1f48f23f3f482c
