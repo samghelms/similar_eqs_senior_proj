@@ -9,21 +9,22 @@ from common.heuristics import test_for_suitable, split_high_level_eqs
 from common.tokenize import tokenize
 import sys
 import csv
-
+import json
 
 def process_row(r, writer, sw=['\\', '\\\\']):
-    r.append(replace(r[1]))
-    r.append(split_high_level_eqs(r[2]))
-
-    if r[3] is None or len(r[3]) < 2:
+    d = {}
+    d['eq_id'] = r[0]
+    d['eq'] = r[1]
+    d['clean'] = replace(r[1])
+    d['clean_split'] = split_high_level_eqs(d['clean'])
+    if d['clean_split'] is None or len(d['clean_split']) < 2:
         return
-    suitable = test_for_suitable(r[3])
+    suitable = test_for_suitable(d['clean_split'])
     if suitable is None:
         return
-    r.append(suitable)
-    r.append([tokenize(e, sw) for e in r[4]])
-
-    writer.writerow(row)
+    d['clean_split_filtered'] = suitable
+    d['clean_split_filtered_tokenized'] = [tokenize(e, sw) for e in d['clean_split_filtered']]
+    writer.write(json.dumps(d)+'\n')
 
 # test: "../data/eqs_100k.tsv" 'aligned_ex.csv'
 if __name__ == '__main__':
@@ -35,14 +36,12 @@ if __name__ == '__main__':
 
     with open(filename, 'r') as csvfile:
         with open(outpath, "w+") as outfile:
-            reader = csvfile #csv.reader(csvfile, quoting=csv.QUOTE_MINIMAL, delimiter='\t')
-            writer = csv.writer(outfile, delimiter='\t')
+            reader = csvfile #csv.reader(csvfile, quoting=csv.QUOTE_MINIMAL, delimiter='\t') 
             for i, row in enumerate(reader):
                 row = row.split('\t', 1)
                 if i == 0:
-                    writer.writerow(['eq_id', 'eq', 'clean', 'clean_split',
-                    'clean_split_filtered', 'clean_split_filtered_tokenized'])
-                process_row(row, writer)
+                    continue
+                process_row(row, outfile)
 
                 if i % 100000 == 0:
                     print("{i} rows processed".format(i=i))
