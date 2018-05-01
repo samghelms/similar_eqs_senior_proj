@@ -114,13 +114,7 @@ class TREmbed:
         for doc_idx, doc in enumerate(doc_list):
             if doc_idx % 1000 == 0:
                 print(doc_idx)
-            _calculate_embeds(E, self.T, [self.vocab.ftoint(token) for token in doc], len(doc), doc_idx)
-            # for i in range(self.T.shape[0]):
-            #     temp = 0
-            #     for token in doc:
-            #         temp += self.T[i, self.vocab.ftoint(token)]
-            #     temp /= len(doc) + 1
-            #     E[doc_idx, i] = temp
+            _calculate_embeds(E, self.T, [self.vocab.ftoint(token) for token in doc if self.vocab.ftoint(token) is not None], len(doc), doc_idx)
         # TODO: remove this
         pickle.dump(E, open(name, 'wb+'))
         print("embeds constructed, projecting")

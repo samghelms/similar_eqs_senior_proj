@@ -1,4 +1,5 @@
 from IPython.display import (display_javascript, display_html)
+from IPython.core.display import display, HTML
 from uuid import uuid1
 import json
 
@@ -55,3 +56,28 @@ class katex(object):
     def _ipython_display_(self):
         display_html(self._repr_html_(), raw=True)
         display_javascript(self._repr_javascript_(), raw=True)
+
+
+
+def load_display_scripts():
+    """Loads display scripts"""
+    script = """
+            <script>
+            requirejs.config({
+                paths: { 
+                   'katex': ['//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-beta1/katex.min'], 
+                                                          // strip .js ^, require adds it back
+                },
+            });
+
+            require(['katex'], function(katex) {
+                 console.log("Loaded :)");
+                 console.log(katex)
+                 window.katex = katex
+                 return {};
+            });
+            </script>
+            """
+    display(HTML(script))
+    display(HTML('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-beta1/katex.min.css" integrity="sha384-VEnyslhHLHiYPca9KFkBB3CMeslnM9CzwjxsEbZTeA21JBm7tdLwKoZmCt3cZTYD" crossorigin="anonymous">'))
+

@@ -20,10 +20,10 @@ class Vocab:
         self.shape = (len(self.e_d), len(self.f_d))
 
     def etoint(self, token):
-        return self.e_d[token]
+        return self.e_d[token] if token in self.e_d else None
 
     def ftoint(self, token):
-        return self.f_d[token]
+        return self.f_d[token] if token in self.f_d else None
 
     def transform(self, pairs):
         e, f = zip(*pairs)

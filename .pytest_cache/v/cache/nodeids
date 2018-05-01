@@ -1,0 +1,5 @@
+[
+  "test_suitable.py::test_count_vars",
+  "test_suitable.py::test_count_ops",
+  "test_suitable.py::test_test_for_suitable"
+]
