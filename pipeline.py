@@ -50,7 +50,7 @@ def pipeline(fpath, outfolderpath):
 				print("{i} done".format(i=i))
 			if i % 100000 == 0 and i > 0:
 				outf.close()
-				new_f_path = './' + outfolderpath + '/file_' + str(i / 1000) + '.jsonlist'
+				new_f_path = './' + outfolderpath + '/file_' + str(int(i / 1000)) + '.jsonlist'
 				outf = open(new_f_path, 'w+')
 	print("done. {error_ct} errors".format(error_ct=error_ct))
 
