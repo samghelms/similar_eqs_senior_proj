@@ -1,28 +1,16 @@
 import json
-"""Functions to split list of tokens on equalities."""
-# def apply_split(token, all_tokens, index, prev_index):
-#     new_prev_idx = index
-#     new_prev_idx += 1
-#     if token == '\\\\':
-#         if index < len(all_tokens) - 1 and all_tokens[index + 1] == '\\':
-#             new_prev_idx += 1
-#     elif token in spl_toks:
-#         new_prev_idx = _remove_following_n(token, all_tokens[new_prev_idx:], i)
-#     ret = all_tokens[prev_index:index]
-#     return new_prev_idx, ret    
-
-# spl_toks = ['\\mbox', '\\text', '\\textrm', '\\textstyle', '\\hbox']
-
 
 def split_exprs(tokens, 
                 l_dep_tokens=json.load(open('data/open_list.json')) + ['{'],
                 r_dep_tokens=json.load(open('data/close_list.json')) + ['}'],
                 break_tokens=json.load(open('data/punctuation_list.json')),
-                relations_list=json.load(open('data/relations_list.json'))):
+                relations_list=json.load(open('data/relations_list.json')),
+                text_tol = 4):
     """@param: tokens: a list of tokens to split up
        @param: l_dep_tokens: tokens that signify entering into a dependent. Default from KaTeX
        @param: r_dep_tokens: tokens that signify exiting a dependent. Default from KaTeX
        @param: break tokens: tokens like , and ; that should be broken on. Default from KaTeX
+       @param: text_tol: how many tokens to allow in a text tag before splitting
         @returns a list of lists of tokens from seperate subexpressions.
         Deals with, for example, aligned equations where the first line is
         something like f = x + y and the second line is g = 6 + i, which should
@@ -59,7 +47,7 @@ def split_exprs(tokens,
                     skip += 1
                     if _t in r_dep_tokens:
                         break
-                if skip - i > 4:
+                if skip - i > text_tol:
                     ret.append([])
                 else:
                     skip = i
