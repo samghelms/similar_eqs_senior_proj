@@ -2,24 +2,47 @@
 
 This repository contains work I have done for my senior thesis to identify similar equations written in latex.
 
+You can read more about the specifics of the project in writeup.md, or by downloading the pdf ({INS_LINK}).
+
+Pre-processed equations are available in the folder `all_eqs`. If you want to run the processing job yourself, use the `pipeline.py` script. Just type something like `python pipeline.py -f eqs_100k.tsv -o test_pipeline_out` to start processing. Note: test_pipeline_out is a folder, not a file.
+
+# A note on `all_eqs`
+
+`all_eqs` contains files that have one json object per line. This allows easy read/write in a distributed environment. To read the equations in, you will need to open a file and then convert each line to json.
+
+Within each json object, there are several fields: 
+
+* 'aligned': the final output of the pipeline, a list of "interseting" looking equations that were related to each other by something like an equals sign (full list of relations used in `data/relations_list.json`).
+
+* 'source_equation': the original equation tex(t)
+
+* 'tokenized_equation': the equation after tokenization.
+
+* 'rowid': the equation ID, corresponds with data from [The Hopper Project](https://github.com/hopper-project)
+
+* 'tokenized_equation_filtered': The equation after being run through a stoplist of unuseful tokens (details under the filtering section in `report/report.md`)
+
+# Notebooks
+
+There are several notebooks that serve as examples/tutorials in this repository.
+
+* `tf-idf benchmark.ipynb`: generates similarity measures between pairs of equations using term-frequency-inverse-document-frequency metrics.
+
+* `katex data.ipynb`: explores data on latex macros and symbols from KaTeX's repository.
+
+* `view_pairs.ipynb`: Showcases using ipython's built in `_repr_html_` methods to get a rich format for python objects in jupyter notebook cells.
+
+* 
+
 # Testing
 
-run `pytest` (pip install it if you don't have it)
-# Todos
+Type `pytest` from the root directory (`pip install pytest` if you don't have it).
 
-1. Finish up tests and set up pytest
+# Development
 
-2. Deal with lone operators
+If you'd like to adapt this for your own work, feel free. A good starting point would be looking through the test_* files for examples of what everything does.
 
-3. why is this happening? \n-\zeta(2) 
-
-# Stoplist
-
-[\left, \right, \mbox, \begin{aligned}, \begin{*}, \end{*}, \ensuremath]
-
-# Important 
-
-## WARNING WARNING!!! MAKE SURE YOU SAVE YOUR FILE IN UTF-8. OPEN THE FILE IN UTF-8. YOU WILL FAIL OTHERWISE.
+# WARNING!!! MAKE SURE YOU ARE WORKING WITH UTF-8. OPEN THE FILE IN UTF-8. YOU WILL FAIL OTHERWISE.
 
 # Improvements
 
@@ -29,71 +52,29 @@ nasty example:
 
 \n\xymatrix@R=0.25cm @C=0.7cm{\nU \otimes (V \otimes W) \ar[r]^{c_{U,V \otimes W}}(V \otimes W) \otimes U \ar[dr]^{\alpha_{V,W,U}}\\\n(U \otimes V) \otimes W \ar[dr]_-{c_{U,V} \otimes W} \ar[ur]^{\alpha_{U,V,W}}V \otimes (W \otimes U)\\\n(V \otimes U) \otimes W \ar[r]_{\alpha_{V,U,W}}V \otimes (U \otimes W)\ar[ur]_{ V \otimes c_{U,W}}\n}\n
 
-
-''\\nA'' versus '\\nabla'
-
-\\begin{equation}\n 3\\widetilde{\\Gamma}_{2j}-3\\Gamma_{2j}=-3R_4(0)a_{2j}^2 -6\\int_{\\gamma_j}\\frac{S_2R_4}{r^5}\\,\\psi_2\\varphi_1^4\\,dw +3\\int_{\\gamma_j}\\frac{S_2R_3}{r^4}\\,\\psi_2^2\\varphi_1^3\\,dw.\n\\end{equation}
-
-
-sometimes people use \\, to denote spacing
-
-# pitfalls
-Sometimes people don't put a space between macros and variables: *\betaz* should be \beta z. But most math renderers won't fix this for you anyways, so I will consider this a bug.
-\mathrm{or,}\sqrt{\alpha^2-\beta^2}-c=-\betaz+\alpha\sqrt{1+z^2}
-
-x=e^{-w}, 
-z=\sum_{\mu=1}^\infty
-\frac{\mu^{\mu-1}}{\mu!}\;e^{-\mu}\;x^\mu,
-t-1=\sum_{\mu=1}^\infty
-\frac{\mu^{\mu}}{\mu!}\;e^{-\mu}\;x^\mu.
-
-Only "t-1=\sum_{\mu=1}^\infty \frac{\mu^{\mu}}{\mu!}\;e^{-\mu}\;x^\mu." gets pulled out because of the t-1. To keep the parsers simple, I propose dealing with this with a simple tf-idf pass, rather than with the parser rules.
-
 # Interesting examples
 
-This is correct: \mathrm{or,}\sqrt{\alpha^2-\beta^2}-c=-\betaz+\alpha\sqrt{1+z^2}
-
-(you could filter out tags like mathrm and text later)
-
-tags you might want to filter: mathrm, text, mbox
-
-Why we should keep text tags? 
+## Should we get rid of all text tags (like \mathcal)?
 
 \bigcup_{i \in I} \Omega_i : {\mathcal{X}} {\dashrightarrow} {\mathcal{Y}},  \left( \bigcup_{i \in I} \Omega_i \right)(x):=
 \bigcup_{i \in I} \Omega_i(x) \text{ for all } x \in {\mathcal{X}}.
 
 # Things you may want to further filter:
 
-"\\;" and "\\,"
+"\\;" "\\,"
 
-# Todos:
+# Potential improvements:
 
-1. \\text \\mbox
-2. make right/left dependency configurable
-3. add \\textrm to high level splits
-4. add [textstyle] to stoplist
-5. "fold" aligns with nothing on LHS in.
-6. make all rules configurable
-7. maybe get rid of the fraction?
-8. bring in some sort of hash table of latex symbols?
-9. deal with: \log\psi(t)=\int_{-\infty}^{0}\left(e^{itx}-1-itx\right)\frac{\alpha dx}{|x|^{\alpha+1}}=-C_{\alpha}|t|^{\alpha}\left(1+i(1+i\  \text{\e m sgn}(t)\tan\frac{\pi\alpha}{2}\right
-10. add in rule for lone fractions?
-11. add periods to stoplist options -- build in a rule to not mess with decimals
-12. allow numbers to be of one string
-13. deal with: \sum_{k}\theta(n+k,n)\frac{u^{n+k}}{(n+k)!}=\sum_{k}\frac{(n+k)!}{(n-1)!}\delta_k(n+k)\frac{u^{n+k}}{(n+k)!}=\frac{1}{n!}\arg\tanhnu,
-14. add paranthesis to dependents again? and maybe brackets? For function definitions: \sum_{k}\theta(n+k,n)\frac{u^{n+k}}{(n+k)!}=\sum_{k}\frac{(n+k)!}{(n-1)!}\delta_k(n+k)\frac{u^{n+k}}{(n+k)!}=\frac{1}{n!}\arg\tanhnu,
-15. K_T = \frac{(1-\gamma) \log(Tt^2)}{K(\theta_a^*-t,\theta_a^*+\zeta t)} = \frac{(1-\gamma) \log(Tt^2)}{K(\overline{\theta}_a,\theta_a^*+\zetat)},
-16. Write an example of how to filter out partials
+Right now, \frac is considered an operator. This leads to a lot of akwardly short epressions like dx/dy making it into the final dataset however. This is more of a notation than an operation, so it might be worth writing a method to filter out such lone fractions. This would be easy to do by extending `filter_tokens.py`
 
-list of all mathematical symbols:
+# Sources of data for algorithms
 
-https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
+First list of all mathematical symbols (from the TeX repository):
 
-http://tug.ctan.org/info/symbols/comprehensive/symbols-a4.pdf
+http://ctan.math.ca/tex-archive/info/symbols/comprehensive/SYMLIST
 
+KaTeX:
 
-Based right and left dependency rules off of this: http://web.ift.uib.no/Teori/KURS/WRK/TeX/symALL.html
+https://github.com/Khan/KaTeX
 
-tokenize makes two passes:
-
-first, to chunk up everything, second to split macros like \\betadx => \\beta dx
+Thank you to Khan Academy for building such a great tool!
