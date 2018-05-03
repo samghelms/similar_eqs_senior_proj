@@ -2,4 +2,4 @@
 
 pandoc --toc --bibliography=bibliography.bib ./writeup.md -s -o writeup.tex
 
-../../tectonic/target/debug/tectonic ./writeup.tex
+../../../tectonic/target/debug/tectonic ./writeup.tex

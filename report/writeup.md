@@ -1,3 +1,7 @@
+## Senior Project Report
+## Author: Samuel Helms
+## Advisor: John Lafferty
+
 # Intro
 
 ## Motivation
@@ -17,25 +21,29 @@ As far as I am aware, no one has yet taken advantage of the equals sign for crea
 This project will enable researchers and data scientists who work with mathematics texts to evaluate the intrinsic success of their embeddings. It may also enable better understanding of embedding in general. If I am able to create a large enough dataset of equivalent equations, the equivalent equations could also be used to train embeddings in a supervised fashion.
 
 ## Background
-This fall, I started working with a research group that Prof. John Lafferty helped found called [https://github.com/hopper-project](The Hopper Project). The Hopper Project has created a dataset of academic articles from arxiv and coded up a pipeline that extracts LaTeX from these academic articles. I will extract equivalent equations from this dataset.
+This fall, I started working with a research group that Prof. John Lafferty helped found called [The Hopper Project](https://github.com/hopper-project). The Hopper Project has created a dataset of academic articles from arxiv and coded up a pipeline that extracts LaTeX from these academic articles. I will extract equivalent equations from this dataset.
 
 ## Outcome: What I've Actually Created
 
-### A dataset for evaluating intrinsic similarities
-I have created a dataset of equivalent equations from these texts and provide benchmarks for various embeddings models using the equivalencies, which will be made available to the public via github. In early tests, I have found millions of candidates for generating equivalent equations in the arxiv dataset.
+### A dataset of equations related by things like equals signs
 
-### A set of benchmarks using this dataset
+You can get a premade dataset of with 5 million equations in it at [https://github.com/samghelms/similar_eqs_senior_proj](https://github.com/samghelms/similar_eqs_senior_proj), in the `all_eqs` folder. This is a folder of files with processed equations. The repository includes examples on how to read in and work with these files, and instructions on how to generate your own dataset of interesting equation pairs.
 
-I have created a set of benchmarks for working with this dataset.
+These equations can be useful for a myriad of tasks, such as evaluating embeddings -- pairs split by relations should be equivalent in some sense -- or training embeddings models themselves. The final dataset has millions of equations, so the data can easily be used for such a task.
 
+### A set of scripts for tokenizing TeX and identifying useful equations
+
+If you're reading this report on github, you probably already know this. 
+
+The repository at [https://github.com/samghelms/similar_eqs_senior_proj](https://github.com/samghelms/similar_eqs_senior_proj) contains the library of scripts and instructions on how to use them, as well as a premade pipeline for processing TeX formulas. Every function is unit tested and has been reworked many times based on feedback from Hopper Project researchers and mistakes made in processing jobs.
 
 ### A suite of tools for working with equation embeddings
 
 Equations texts are harder to work with than normal english texts because they are written in LaTeX. I started working on a set of tools for visualizing mathematics in embeddings models this fall [@samghelms_mathviz:_2017]. 
 
-{WRITE MORE HERE}
+This evolved into seeing how I contribute and work within existing tools. I've since come up with ways of rendering rich html/javascript representations of math in jupyter notebooks, and I have made a gist showing how to do so available to the public: [https://github.com/samghelms/similar_eqs_senior_proj](https://gist.github.com/samghelms/d1bd0a941c29044d6baa213ad96daa67).
 
-These tools include a tool for visualizing any embeddings for things that aren't easily represented as text in T-SNE plots {INS_CITE} and a method for using KaTeX in jupyter notebooks for a rich representation of math. 
+I also got interested in being able to visualize math on T-SNE plots (for the uninitiated: a 2d scatter plot that approximates high dimensional vectors). I'm currently developing a fully fledged library that allows you to easily create such plots, and you can see my prototype in action here: [https://samghelms.github.io/webgl-scatter/](https://samghelms.github.io/webgl-scatter/) (zoom in and hover!).
 
 # The Code
 
@@ -49,29 +57,36 @@ As a result of this difficulty in determining substantiveness, I decided to impl
 
 ## A brief history of TeX
 
-You might be wondering why tokenization and parsing  similar equations was hard enough a task to spend a whole semester doing it. You would be right to wonder: it should not be very hard to do, if not for the fact that the core layout algorithms for TeX are all written in a virtually extinct language called WEB written by the creator of TeX, Donald Knuth, himself. {INS_CIT} (https://en.wikipedia.org/wiki/WEB). 
+You might be wondering why tokenization and parsing  similar equations was hard enough a task to spend a whole semester doing it. You would be right to wonder: it should not be very hard to do, if not for the fact that the core layout algorithms for TeX are all written in a virtually extinct language called [WEB](https://en.wikipedia.org/wiki/WEB) written by the creator of TeX, Donald Knuth, himself. 
 
 Because WEB has been all but forgotten, the core TeX algorithms implemented in it by Knuth are automatically cross-compiled into C code before being used by TeX tools like texlive. This makes it extremely difficult to hack into TeX's parsing algorithms and access their internal data structures. Without access to the TeX algorithms or internal data structures (or even source code that is easy to navigate and/or understand), it is hard to even tokenize LaTeX codes, not to mention parse them.
 
 As a result, I have written my own tokenization function. I have not written a complete TeX parser, but I have implemented a shallow parse that can skip along the highest level of TeX code and check if it contains certain types of operations.
 
-A group at Harvard wrote a wrapper around KaTeX for tokenizing LaTeX math expressions. I decided to write my own so that I could be absolutely certain about the assumptions underlying the data and avoid accidentally introducing bias into the data. KaTeX's priority is parsing as many expressions to something that can render on a website as possible, and doing so quickly; it still only parses about {INS_BENCH} equations correctly. 
+A group at Harvard wrote a wrapper around KaTeX for tokenizing LaTeX math expressions. I decided to write my own so that I could be absolutely certain about the assumptions underlying the data and avoid accidentally introducing bias into the data.
 
 ## Tokenization
 
 I implemented a finite state machine to tokenize TeX codes. It takes a stream of characters from an equation from an arxiv text as input and iterates over it, changing state with each new character. Depending on the state and the character, the FSM will build a token or create a new one. 
 
+The following input string will be tokenized to the following list by the function `tokenize` in `tok.py`:
+
+`'\\frac{x} {y} \\begin{eq }x = \\textfadfsad{tets} \\int 1.0 .6 \\end{test}'` 
+
+`['\\frac', '{', 'x', '}', '{', 'y', '}', '\\begin', '{', 'e', 'q', '}', 'x', '=', '\\text', 'fadfsad', '{', 't', 'e', 't', 's', '}', '\\int', '1.0', '.6', '\\end', '{', 't', 'e', 's', 't', '}']`
+
+
+On the first pass, the tokenizer follows some extremely simple rules, like building every character a-z that comes after a \\ into a single token. This creates some incorrect tokens, like `\\intx`. So the tokenizer makes another pass along the now partially-tokenized expressions and attempts to break up any string starting with '\\' into a known macro. I acquired and merged two collections of known macros: 1 from CTAN (the official tex repository, you can check out the list in your browser at this link: [http://ctan.math.ca/tex-archive/info/symbols/comprehensive/SYMLIST](http://ctan.math.ca/tex-archive/info/symbols/comprehensive/SYMLIST)), and the other from KaTeX, Khan Academy's online math renderer. This function is called `fix_macros` and resides in `tok.py`
+
 Example: 
 
-Location in codebase: 
+`toks = tokenize('\\frac{x} {y} \\begin{eq }x = \\textfadfsad{tets} \\int 1.0 .6 \\end{test}')
+fixed = fix_macros(toks, debug=True)
+fixed == ['\\frac', '{', 'x', '}', '{', 'y', '}', '\\begin', '{', 'e', 'q', '}', 'x', '=', '\\text', 'fadfsad', '{', 't', 'e', 't', 's', '}', '\\int', '1.0', '.6', '\\end', '{', 't', 'e', 's', 't', '}']`
 
-On the first pass, the tokenizer follows some extremely simple rules, like building every character a-z that comes after a \\ into a single token. This creates some incorrect tokens, like `\\intx`. So the tokenizer makes another pass along the now partially-tokenized expressions and attempts to break up any string starting wiht '\\' into a known macro. I acquired and merged two collections of known macros: 1 from {INS_CIT}, and the other from KaTeX.
+Location in codebase: `tok.py`. Tests in `test_tok.py`
 
-The ... can't find about 
-
-Example: 
-
-Location in codebase: 
+You can run both of the commands together using the function `tokenize_and_fix_macros` in `tok.py`
 
 ## Further preparation
 
@@ -79,19 +94,18 @@ The following section goes over a series of functions I have written to further 
 
 ### Splitting
 
-Splitting equations comes in two steps: first, splitting equations that are in aligned environments, like the one below, into multiple expressions. These splits occur whenever a "\\", ",", or ";" character that is not within a subexpression is encountered. A character is considered to be within a subexpression whenver it is within a two characters like "(" and ")" or "{" and "}". The full list of these characters comes from KaTeX's list of right and left bracket-type characters.
+All code to do with splitting resides in `split.py`.
 
+Splitting equations comes in two steps: 
 
-`\begin{aligned} 
-f(x) &= x + y^2 \\
-g(x) &= ax + b
-\end{aligned}`
+1. Splitting equations that are in aligned environments, like the one below, into multiple expressions. These splits occur on:
+* A "\\\\" (TeX for line break)
+* A punction token (see all punctuation tokens in `data/punctuation_list.json`) that is not within a subexpression, A character is considered to be within a subexpression whenver it is within a two characters like "(" and ")" or "{" and "}". The full list of these characters comes from KaTeX's list of right and left bracket-type characters.
+* A long inline text expression (long because we don't want to automatically split on something like `\\text{x}`) is encountered. 
 
-=> 
+Example of this first step:
 
-`f(x) = x + y^2 \text{ and } g(x) = ax + b`
-
-If something like the following gets encountered, the bottom line gets "folded in" to the top one.
+One thing to note is that, if something like the following gets encountered, the bottom line gets "folded in" to the top one (this would be with a list of tokens in the code, I'm using TeX strings here for clarity).
 
 `\begin{aligned} 
 f(x) &= x + y^2 \\
@@ -102,42 +116,89 @@ folding in =>
 
 `f(x) = x + y^2 = ax + b`
 
-The same applied to inline equations like `ax + b = 700x + z, ax + c = \theta + z`, which would be split into `ax + b = 700x + z` and `ax + c = \theta + z`
+The same rules apply to inline equations like `ax + b = 700x + z, ax + c = \theta + z`, which would be split into `ax + b = 700x + z` and `ax + c = \theta + z` (once again, these would actually be token lists in practice).
 
-After such expressions have been handled, the equations are split on equalities. I use a list of {INS_NUM} equalities from KaTeX to find {CONTINUE} equalities to split on. I only split when the equality is not within a left and right bracket-type character (like "{" and "}"). 
+2. After expressions have been handled, equations are split on relations. I use a list of relations from KaTeX (`data/relation_list.json`) to find relations to split on. I only split when the relation is not within a left and right bracket-type character (like "{" and "}", see full list of right and left symbols in `open_list.json` and `close_list.json`). 
 
-Example:
+Example (stylized for clarity):
 
 `f(x) + y = 100x^2` => `f(x) + y` and `100x^2`
 
-### Completeness heuristics.
+(Actual example from the code)
 
-What do I mean by a "complete" expression? Without wading into a philosophical argument about the meaning of matehmatical symbols, I will define a "complete" expression as one that has some sort of operator and at least two variables or numbers.  {INS_MORE}
+`split(tokenize_and_fix_macros("5 = 6 \\\\ = 6 + 7"))`
 
-#### TF-IDF versus a shallow parse
+Results in the following pairs:
 
+`[[['5'], ['6'], ['6', '+', '7']]]`
+
+Location in codebase: `split.py`. Tests in `test_split.py`
+
+
+### Heuristics for finding useful pairs
+
+Once we have tokenized and split our equations, we need to determine which of these expression pairs are worth keeping. One way to do this would be to just use a term-frequency-inverse-document-frequency (tf-idf) similarity score for each equation pair, setting some arbitrary cutoff.
+
+#### TF-IDF
+If you want to use tf-idf scores, you can with the data in `all_eqs` -- just read in the 'tokenized_equation_filtered' field from the json objects, rather than the 'aligned' field.
+
+#### Other metrics
+
+I wanted to use the parsing abilities I have developed to develop another sort of metric. In `suitable.py`, I have implemented a test that checks if a math expression has more than one variables/symbol/number and at least one operator (something like a plus sign). I use this as the metric to create the dataset in `all_eqs`.
+
+As an example, this test would return True for the following (tokenized) expression: 
+
+`['x', '+', '1.0', '900', '\\theta', '\\int']`
+
+But If you removed the '+', it would return false.
+
+Additionally, it will only count operators if they are on the "inside" of the expression, so that things like the following list of tokens don't count.
+
+`['+', '1.0', '900', '\\theta', '\\int']`
+
+Location in codebase: `suitable.py`. Tests in `test_suitable.py`
 
 ### Stoplisting
 
 There are some tokens that add nothing to the mathematical meaning of the expression, such as `\begin{align}`. In addition, comments inside of `\text` tags, though perhaps pertaining to the equation, end up distracting from the meanining as well, since, to the model, anything character inside the `\text` looks like a variable.
 
-One avenue to explore could be tokenizing text inside of `\text` tags as words, but I have decided to just exclude `\text` and all children for the purposes of this project. Symbols and variables are closer to the heart of meanining in mathematical expressions, and seem to me to be safer for the time being.
+Sometimes people do just use `\text` tags to make a variable look a certain way: I wanted to keep as many of these as possible, so I struck a balance where I only excluded `\text` tags and their children (anything within {} brackets) when there were more than 4 tokens within the brackets ({}).
 
 Example: 
 
-Location in codebase: 
+The following expression: 
+
+`filter_tokens(['\\int', '\\text', '{', 'x', '}', '\\text', '{', 'h', 'i', 't', 'h', 'e', 'r', 'e', '}', 'x', '+', 'y'])`
+
+Results in:
+
+`['\\int', '\\text', '{', 'x', '}', 'x', '+', 'y']`
+
+The first text tag is kept since it is relatively harmless, surrounding a variable to make it look differently. The second text tag surrounds a fully fledged expression, and thus gets pruned.
+
+Location in codebase: `filter_equations.py`. Tests in `test_filter_equations.py`
 
 ### Normalization
 
-LaTeX allows you to write expressions like `\int_{x+y}^5` and `\int^5_{x+y}` and get equivalent representations. `normalize` makes it so that the `^` and any of its dependents always come before `_` and its dependents. 
+LaTeX allows you to write expressions like `\int_{x+y}^5` and `\int^5_{x+y}` and get equivalent representations. `^` and any of its dependents always come before `_` and its dependents. I considered implementing a function to normalize these types of expressions, but thinking about the state of the art in NLP modeling made me decide against it. When we tokenize a natural lanuage sentence like "The man was buying groceries and walking a dog", we don't worry about the fact that it is equivalent to "The man was walking a dog and buying groceries". Not needing to worry about this makes the models more flexible, easier to train (fewer pre-processing steps), and generally better, in my opinion.
 
-# The Results
+# Some metrics
 
 - table with: number of equations parsed, total number of equations (success rate). Maybe compare a few methods.
 
-- matt's embeddings (graph)
+## TF-IDF similarity between identified pairs of equations versus random pairs
 
-- tf-idf (graph)
+One way to evaluate how useful this process of splitting on relations is by checking the term-frequency-inverse-document-frequency similarity scores between the pairs of equations, and comparing these socres with randomly assigned pairs of equations. We would expect that equations identified via equals sings would have a pretty high similarity to each other, on average, since people tend to repeat tokens on either side of a relation ($x + 6 = x + 3 + 3$, for example).
+
+The following histogram compares the similiarity scores for the two across a sample of 100,000 equations. A higher score on the x axis means equations are more similar. 
+
+{INS HIS 1}
+
+You can see, based on this graph, that the probability of a pair of equations identified through the methodology laid out in this report being similar is much higher than that of a random pair.
+
+It is a bit hard to see what the distribution of pairs identified through my methods is like since TF-IDF has such a higher peak. Plotted alone, the graph is more or less normally distributed. This is encouraging, since we would expect some sort of natural gradient to how similar equation are, and yet also expect many to be very similar (but not *too* similar).
+
+{INS HIS 2}
 
 # Bibliography
 
