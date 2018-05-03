@@ -1,6 +1,6 @@
-## Senior Project Report
-## Author: Samuel Helms
-## Advisor: John Lafferty
+% Senior Project Report 
+% Samuel Helms 
+% Advised by John Lafferty
 
 # Intro
 
@@ -47,7 +47,7 @@ I also got interested in being able to visualize math on T-SNE plots (for the un
 
 # The Code
 
-In this section, I will go over the code I have written to tokenize TeX equations at a high level and explain why I wrote it the way I did. Note that this is only a high level discussion: look to the readme and comments in the code base for specific instructions on how to use the pipeline. Before I jump into the specifics of the code, I will give a brief background on TeX to make it clearer why I had to go to the lengths I did to get a aligned few math equations. 
+In this section, I will go over the code I have written to tokenize TeX equations at a high level and explain why I wrote it the way I did. Note that this is only a high level discussion: look to the readme and comments in the code base for specific instructions on how to use the pipeline. Before I jump into the specifics of the code, I will give a brief background on TeX to make it clearer why I had to go to the lengths I did to get aligned few math equations. 
 
 Identifying and using equal equations in machine learning models requires two things: One, being able to properly identify tokens (so that the LaTeX code `\\int` is treated as an atomic unit and not a sequence of the characters "\\", "i", "n", and "t"); Two, being able to say whether a subexpression is substantive enough to use in the model. 
 
@@ -90,7 +90,7 @@ You can run both of the commands together using the function `tokenize_and_fix_m
 
 ## Further preparation
 
-The following section goes over a series of functions I have written to further prepare the tokenized equations for a machine learning model. Keep in mind some, none, or all of these functions need not be used: You could modify them, write your own, or just use the output of the tokenization process for a model.
+The following section goes over a series of functions I have written to further prepare the tokenized equations for a machine learning model. Keep in mind some, any, or all of these functions need not be used: You could modify them, write your own, or just use the output of the tokenization process for a model.
 
 ### Splitting
 
@@ -160,7 +160,7 @@ Location in codebase: `suitable.py`. Tests in `test_suitable.py`
 
 ### Stoplisting
 
-There are some tokens that add nothing to the mathematical meaning of the expression, such as `\begin{align}`. In addition, comments inside of `\text` tags, though perhaps pertaining to the equation, end up distracting from the meanining as well, since, to the model, anything character inside the `\text` looks like a variable.
+There are some tokens that add nothing to the mathematical meaning of the expression, such as `\begin{align}`. In addition, comments inside of `\text` tags, though perhaps pertaining to the equation, end up distracting from the meanining as well, since, to the model, any character inside the `\text` looks like a variable.
 
 Sometimes people do just use `\text` tags to make a variable look a certain way: I wanted to keep as many of these as possible, so I struck a balance where I only excluded `\text` tags and their children (anything within {} brackets) when there were more than 4 tokens within the brackets ({}).
 
@@ -184,21 +184,24 @@ LaTeX allows you to write expressions like `\int_{x+y}^5` and `\int^5_{x+y}` and
 
 # Some metrics
 
-- table with: number of equations parsed, total number of equations (success rate). Maybe compare a few methods.
+| Total Number of Equations | Useful Equation pairs identified | 
+|---------------------------|----------------------------------| 
+| 69,052,499                | 1,881,786                        | 
+
 
 ## TF-IDF similarity between identified pairs of equations versus random pairs
 
-One way to evaluate how useful this process of splitting on relations is by checking the term-frequency-inverse-document-frequency similarity scores between the pairs of equations, and comparing these socres with randomly assigned pairs of equations. We would expect that equations identified via equals sings would have a pretty high similarity to each other, on average, since people tend to repeat tokens on either side of a relation ($x + 6 = x + 3 + 3$, for example).
+![Evaluating equation pairs via equivalencies](pairs_comparison.png "Evaluating equation pairs via equivalencies")
 
-The following histogram compares the similiarity scores for the two across a sample of 100,000 equations. A higher score on the x axis means equations are more similar. 
+One way to evaluate how useful this process of splitting on relations is by checking the term-frequency-inverse-document-frequency similarity scores between the pairs of equations, and comparing these scores with randomly assigned pairs of equations. We would expect that equations identified via equivalencies would have a pretty high similarity to each other, on average, since people tend to repeat tokens on either side of a relation ($x + 6 = x + 3 + 3$, for example).
 
-{INS HIS 1}
+The histogram at the beginning of the section compares the similiarity scores for the two across a sample of 100,000 equations. A higher score on the x axis means equations are more similar. 
 
 You can see, based on this graph, that the probability of a pair of equations identified through the methodology laid out in this report being similar is much higher than that of a random pair.
 
-It is a bit hard to see what the distribution of pairs identified through my methods is like since TF-IDF has such a higher peak. Plotted alone, the graph is more or less normally distributed. This is encouraging, since we would expect some sort of natural gradient to how similar equation are, and yet also expect many to be very similar (but not *too* similar).
+![Zooming in on the pairs](pairs_dist.png "Zooming in on the pairs")
 
-{INS HIS 2}
+It is a bit hard to see what the distribution of pairs identified through my methods is like since TF-IDF has such a higher peak. Plotted alone, the graph is more or less normally distributed. This is encouraging, since we would expect some sort of natural gradient to how similar equation are, and yet also expect many to be very similar (but not *too* similar).
 
 # Bibliography
 
