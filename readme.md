@@ -2,6 +2,8 @@
 
 This repository contains work I have done for my senior thesis to identify similar equations written in latex.
 
+![Evaluating equation pairs via equivalencies](report/pairs_comparison.png "Evaluating equation pairs via equivalencies")
+
 You can read the formal writeup [here](./report/writeup.pdf).
 
 ## Motivation
