@@ -191,7 +191,7 @@ LaTeX allows you to write expressions like `\int_{x+y}^5` and `\int^5_{x+y}` and
 
 ## TF-IDF similarity between identified pairs of equations versus random pairs
 
-![Evaluating equation pairs via equivalencies](pairs_comparison.png "Evaluating equation pairs via equivalencies")
+![Evaluating equation pairs via equivalencies](report/pairs_comparison.png "Evaluating equation pairs via equivalencies")
 
 One way to evaluate how useful this process of splitting on relations is by checking the term-frequency-inverse-document-frequency similarity scores between the pairs of equations, and comparing these scores with randomly assigned pairs of equations. We would expect that equations identified via equivalencies would have a pretty high similarity to each other, on average, since people tend to repeat tokens on either side of a relation ($x + 6 = x + 3 + 3$, for example).
 
@@ -199,7 +199,7 @@ The histogram at the beginning of the section compares the similiarity scores fo
 
 You can see, based on this graph, that the probability of a pair of equations identified through the methodology laid out in this report being similar is much higher than that of a random pair.
 
-![Zooming in on the pairs](pairs_dist.png "Zooming in on the pairs")
+![Zooming in on the pairs](report/pairs_dist.png "Zooming in on the pairs")
 
 It is a bit hard to see what the distribution of pairs identified through my methods is like since TF-IDF has such a higher peak. Plotted alone, the graph is more or less normally distributed. This is encouraging, since we would expect some sort of natural gradient to how similar equation are, and yet also expect many to be very similar (but not *too* similar).
 
@@ -233,8 +233,6 @@ There are several notebooks that serve as examples/tutorials in this repository.
 * `katex data.ipynb`: explores data on latex macros and symbols from KaTeX's repository.
 
 * `view_pairs.ipynb`: Showcases using ipython's built in `_repr_html_` methods to get a rich format for python objects in jupyter notebook cells.
-
-* 
 
 ## Testing
 
@@ -280,3 +278,84 @@ KaTeX:
 https://github.com/Khan/KaTeX
 
 Thank you to Khan Academy for building such a great tool!
+
+# Bibliography
+
+@inproceedings{schnabel_evaluation_2015,
+	title = {Evaluation methods for unsupervised word embeddings},
+	doi = {10.18653/v1/D15-1036},
+	author = {Schnabel, Tobias and Labutov, Igor and Mimno, David and Joachims, Thorsten},
+	month = jan,
+	year = {2015},
+	pages = {298--307}
+}
+
+@misc{samghelms_embeddings-viz:_2018,
+	title = {embeddings-viz: demo of visualization tool {I}'ve been building using three.js and react},
+	shorttitle = {embeddings-viz},
+	howpublished = {https://github.com/samghelms/embeddings-viz},
+	urldate = {2018-02-02},
+	author = {Samuel Helms},
+	month = jan,
+	year = {2018},
+	note = {original-date: 2018-01-19T22:18:35Z},
+	file = {Snapshot:/Users/sam/Zotero/storage/JIIGW36U/embeddings-viz.html:text/html}
+}
+
+@misc{noauthor_react_nodate,
+	title = {React {App}},
+	howpublished = {http://ood.cs.uchicago.edu:5000/},
+	urldate = {2018-02-02},
+	author = {Samuel Helms},
+	file = {React App:/Users/sam/Zotero/storage/DIKV4ZEN/ood.cs.uchicago.edu.html:text/html}
+}
+
+@misc{samghelms_mathviz:_2017,
+	title = {mathviz: {A} python package for examining mathematics equation embeddings},
+	copyright = {MIT},
+	shorttitle = {mathviz},
+	howpublished = {https://github.com/samghelms/mathviz},
+	urldate = {2018-02-02},
+	author = {Samuel Helms},
+	month = dec,
+	year = {2017},
+	note = {original-date: 2017-11-01T23:40:18Z},
+	file = {Snapshot:/Users/sam/Zotero/storage/H7V8QRUA/mathviz.html:text/html}
+}
+
+@article{mikolov_distributed_2013,
+	title = {Distributed {Representations} of {Words} and {Phrases} and their {Compositionality}},
+	url = {http://arxiv.org/abs/1310.4546},
+	abstract = {The recently introduced continuous Skip-gram model is an efficient method for learning high-quality distributed vector representations that capture a large number of precise syntactic and semantic word relationships. In this paper we present several extensions that improve both the quality of the vectors and the training speed. By subsampling of the frequent words we obtain significant speedup and also learn more regular word representations. We also describe a simple alternative to the hierarchical softmax called negative sampling. An inherent limitation of word representations is their indifference to word order and their inability to represent idiomatic phrases. For example, the meanings of "Canada" and "Air" cannot be easily combined to obtain "Air Canada". Motivated by this example, we present a simple method for finding phrases in text, and show that learning good vector representations for millions of phrases is possible.},
+	urldate = {2018-02-02},
+	journal = {arXiv:1310.4546 [cs, stat]},
+	author = {Mikolov, Tomas and Sutskever, Ilya and Chen, Kai and Corrado, Greg and Dean, Jeffrey},
+	month = oct,
+	year = {2013},
+	note = {arXiv: 1310.4546},
+	keywords = {Computer Science - Computation and Language, Statistics - Machine Learning, Computer Science - Learning},
+	file = {arXiv\:1310.4546 PDF:/Users/sam/Zotero/storage/5KQL66IR/Mikolov et al. - 2013 - Distributed Representations of Words and Phrases a.pdf:application/pdf;arXiv.org Snapshot:/Users/sam/Zotero/storage/XSGEN36P/1310.html:text/html}
+}
+
+@inproceedings{pennington_glove:_2014,
+	title = {Glove: {Global} {Vectors} for {Word} {Representation}},
+	booktitle = {{EMNLP}},
+	author = {Pennington, Jeffrey and Socher, Richard and Manning, Christopher D.},
+	year = {2014}
+}
+
+@inproceedings{ramos_using_2003,
+	title = {Using {TF}-{IDF} to {Determine} {Word} {Relevance} in {Document} {Queries}},
+	author = {Ramos, Juan David Hincapié},
+	year = {2003}
+}
+
+@misc{noauthor_neural_nodate,
+	title = {A {Neural} {Network} for {Machine} {Translation}, at {Production} {Scale}},
+	url = {https://research.googleblog.com/2016/09/a-neural-network-for-machine.html},
+	abstract = {Posted by Quoc V. Le \& Mike Schuster, Research Scientists, Google Brain Team   Ten years ago, we announced the launch of Google Translate , ...},
+	language = {en},
+	urldate = {2018-02-02},
+	journal = {Research Blog},
+	file = {Snapshot:/Users/sam/Zotero/storage/V42C9XR2/a-neural-network-for-machine.html:text/html}
+}
